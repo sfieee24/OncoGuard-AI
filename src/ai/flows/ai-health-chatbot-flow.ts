@@ -40,7 +40,7 @@ User's Question: {{{query}}}`,
         threshold: 'BLOCK_ONLY_HIGH',
       },
       {
-        category: 'HARM_CATEGORY_MEDICAL',
+        category: 'HARM_CATEGORY_HARASSMENT',
         threshold: 'BLOCK_MEDIUM_AND_ABOVE',
       }
     ],

@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An AI agent that explains cancer risk predictions in simple terms.
@@ -90,7 +89,7 @@ const aiRiskExplanationFlow = ai.defineFlow(
   async input => {
     const {output} = await aiRiskExplanationPrompt({
       ...input,
-      confidence: Math.round(input.confidence * 100), // Convert confidence to percentage for prompt
+      confidence: Math.round(input.confidence * 100),
     });
     return output!;
   }

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
@@ -27,7 +26,6 @@ function ResultsContent() {
           const parsed = JSON.parse(last);
           setData(parsed);
 
-          // Generate symptoms summary for AI
           const symptoms = [
             parsed.breastLump === 'yes' ? 'Breast lump: Yes' : 'Breast lump: No',
             parsed.pain === 'yes' ? 'Pain: Yes' : 'Pain: No',
@@ -52,14 +50,12 @@ function ResultsContent() {
           setLoading(false);
         }
       } else {
-        // Redirect if no data is found
         router.push('/dashboard');
       }
     }
     loadData();
   }, [id, router]);
 
-  // Prevent crash if data is not yet loaded or missing
   if (loading || !data) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
@@ -93,7 +89,6 @@ function ResultsContent() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        {/* Risk Summary Card */}
         <Card className="md:col-span-1 overflow-hidden h-full border-t-4 border-t-primary">
           <CardHeader className="text-center pb-0">
             <CardTitle className="text-muted-foreground font-medium text-sm uppercase tracking-wider">Risk Level</CardTitle>
@@ -122,7 +117,6 @@ function ResultsContent() {
           <div className={`h-2 w-full ${riskColor}`}></div>
         </Card>
 
-        {/* Quick Summary Card */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Assessment Summary</CardTitle>
