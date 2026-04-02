@@ -25,8 +25,8 @@ const AiRiskExplanationInputSchema = z.object({
   contributingFactors: z
     .string()
     .describe(
-      'A description of the top contributing factors from the ML model, e.g., "Age, presence of breast lump, and family history of cancer."
-    '),
+      'A description of the top contributing factors from the ML model, e.g., "Age, presence of breast lump, and family history of cancer."'
+    ),
 });
 export type AiRiskExplanationInput = z.infer<typeof AiRiskExplanationInputSchema>;
 
