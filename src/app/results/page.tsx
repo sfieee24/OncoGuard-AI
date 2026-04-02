@@ -1,14 +1,14 @@
-
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { explainRisk, type AiRiskExplanationOutput } from '@/ai/flows/ai-risk-explanation-flow';
-import { Loader2, AlertTriangle, ShieldCheck, ArrowLeft, RefreshCw, Printer, Download, UserCircle, Activity } from 'lucide-react';
+import { Loader2, AlertTriangle, ShieldCheck, ArrowLeft, RefreshCw, Printer, Download, UserCircle, Activity, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -17,46 +17,52 @@ function ResultsContent() {
   const [data, setData] = useState<any>(null);
   const [aiResult, setAiResult] = useState<AiRiskExplanationOutput | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const last = localStorage.getItem('last_assessment');
+    if (!last) {
+      router.push('/dashboard');
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(last);
+      setData(parsed);
+
+      const symptoms = [
+        parsed.breastLump === 'yes' ? 'Breast lump: Yes' : 'Breast lump: No',
+        parsed.pain === 'yes' ? 'Pain: Yes' : 'Pain: No',
+        parsed.irregularPeriods === 'yes' ? 'Irregular periods: Yes' : 'Irregular periods: No',
+        parsed.bloating === 'yes' ? 'Abdominal bloating: Yes' : 'Abdominal bloating: No',
+      ].join(', ');
+
+      const explanation = await explainRisk({
+        riskLevel: (parsed.risk || 'Low') as 'Low' | 'Medium' | 'High',
+        confidence: parsed.confidence || 0,
+        gender: parsed.gender || 'unknown',
+        age: parseInt(parsed.age) || 0,
+        symptoms: symptoms,
+        familyHistory: parsed.familyHistory === 'yes' ? 'History reported' : 'No history',
+        lifestyle: `Smoking: ${parsed.smoking}, Alcohol: ${parsed.alcohol}`,
+        contributingFactors: `Age (${parsed.age}), Breast Lump (${parsed.breastLump}), Family History (${parsed.familyHistory})`
+      });
+      setAiResult(explanation);
+    } catch (err: any) {
+      console.error("Data processing or AI Error:", err);
+      setError("The AI service is currently experiencing high demand. Some detailed insights may be temporarily unavailable.");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
-    async function loadData() {
-      const last = localStorage.getItem('last_assessment');
-      if (last) {
-        try {
-          const parsed = JSON.parse(last);
-          setData(parsed);
-
-          const symptoms = [
-            parsed.breastLump === 'yes' ? 'Breast lump: Yes' : 'Breast lump: No',
-            parsed.pain === 'yes' ? 'Pain: Yes' : 'Pain: No',
-            parsed.irregularPeriods === 'yes' ? 'Irregular periods: Yes' : 'Irregular periods: No',
-            parsed.bloating === 'yes' ? 'Abdominal bloating: Yes' : 'Abdominal bloating: No',
-          ].join(', ');
-
-          const explanation = await explainRisk({
-            riskLevel: (parsed.risk || 'Low') as 'Low' | 'Medium' | 'High',
-            confidence: parsed.confidence || 0,
-            gender: parsed.gender || 'unknown',
-            age: parseInt(parsed.age) || 0,
-            symptoms: symptoms,
-            familyHistory: parsed.familyHistory === 'yes' ? 'History reported' : 'No history',
-            lifestyle: `Smoking: ${parsed.smoking}, Alcohol: ${parsed.alcohol}`,
-            contributingFactors: `Age (${parsed.age}), Breast Lump (${parsed.breastLump}), Family History (${parsed.familyHistory})`
-          });
-          setAiResult(explanation);
-        } catch (error) {
-          console.error("Data processing or AI Error:", error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        router.push('/dashboard');
-      }
-    }
     loadData();
-  }, [id, router]);
+  }, [loadData]);
 
-  if (loading || !data) {
+  if (loading && !data) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -87,6 +93,20 @@ function ResultsContent() {
           </Button>
         </div>
       </div>
+
+      {error && (
+        <Alert variant="destructive" className="mb-8">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Service Notice</AlertTitle>
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button variant="outline" size="sm" onClick={loadData} className="ml-4 bg-white text-destructive">
+              <RefreshCw className="mr-2 h-3 w-3" />
+              Try Again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <Card className="md:col-span-1 overflow-hidden h-full border-t-4 border-t-primary">
@@ -175,8 +195,17 @@ function ResultsContent() {
                 <CardDescription>Generative AI analysis of your risk profile</CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="prose max-w-none text-slate-700 leading-relaxed">
-              {aiResult?.explanation || "Explanation not available at this time."}
+            <CardContent className="prose max-w-none text-slate-700 leading-relaxed min-h-[100px]">
+              {loading ? (
+                <div className="flex items-center gap-2 text-muted-foreground italic">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating explanation...
+                </div>
+              ) : aiResult?.explanation ? (
+                <p className="whitespace-pre-wrap">{aiResult.explanation}</p>
+              ) : (
+                <p className="text-muted-foreground italic">Detailed AI explanation is currently unavailable due to high service demand. Please try the "Retry" button above.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -188,7 +217,7 @@ function ResultsContent() {
                 <CardTitle className="text-lg">Suggested Precautions</CardTitle>
               </CardHeader>
               <CardContent className="text-slate-700">
-                {aiResult?.precautions || "Precautions loading..."}
+                {loading ? "Loading..." : aiResult?.precautions || "Precautions temporarily unavailable."}
               </CardContent>
             </Card>
             <Card className="border-l-4 border-l-accent">
@@ -196,7 +225,7 @@ function ResultsContent() {
                 <CardTitle className="text-lg">Next Steps</CardTitle>
               </CardHeader>
               <CardContent className="text-slate-700">
-                {aiResult?.nextSteps || "Next steps loading..."}
+                {loading ? "Loading..." : aiResult?.nextSteps || "Next steps temporarily unavailable."}
               </CardContent>
             </Card>
           </div>

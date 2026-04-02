@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -47,14 +46,23 @@ export default function Chatbot() {
       setMessages(prev => [...prev, { role: 'bot', content: response.response }]);
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'bot', content: "I'm sorry, I'm having trouble processing that right now. Please try again later." }]);
+      setMessages(prev => [...prev, { role: 'bot', content: "I'm sorry, I'm having trouble processing that right now. This might be due to high demand on the AI service. Please try again in a moment." }]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Prevent hydration mismatch by only rendering interactive content once mounted
   if (!mounted) {
-    return null; // Prevent hydration mismatch from browser extensions
+    return (
+      <div className="container mx-auto max-w-4xl px-4 py-8 md:py-12 flex flex-col h-[calc(100vh-140px)]">
+        <Card className="flex-1 flex flex-col shadow-xl overflow-hidden border-2 animate-pulse bg-slate-50">
+          <div className="h-full w-full flex items-center justify-center">
+             <Loader2 className="h-8 w-8 animate-spin text-primary/20" />
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -130,7 +138,7 @@ export default function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 bg-white h-12 text-base rounded-xl"
               disabled={loading}
-              suppressHydrationWarning
+              autoComplete="off"
             />
             <Button type="submit" size="icon" className="h-12 w-12 rounded-xl bg-primary" disabled={loading || !input.trim()}>
               <Send className="h-5 w-5" />
