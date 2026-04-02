@@ -23,10 +23,10 @@ function ResultsContent() {
     async function loadData() {
       const last = localStorage.getItem('last_assessment');
       if (last) {
-        const parsed = JSON.parse(last);
-        setData(parsed);
-
         try {
+          const parsed = JSON.parse(last);
+          setData(parsed);
+
           // Generate symptoms summary for AI
           const symptoms = [
             parsed.breastLump === 'yes' ? 'Breast lump: Yes' : 'Breast lump: No',
@@ -39,7 +39,7 @@ function ResultsContent() {
             riskLevel: parsed.risk as 'Low' | 'Medium' | 'High',
             confidence: parsed.confidence,
             gender: parsed.gender,
-            age: parseInt(parsed.age),
+            age: parseInt(parsed.age) || 0,
             symptoms: symptoms,
             familyHistory: parsed.familyHistory === 'yes' ? 'History reported' : 'No history',
             lifestyle: `Smoking: ${parsed.smoking}, Alcohol: ${parsed.alcohol}`,
@@ -47,18 +47,20 @@ function ResultsContent() {
           });
           setAiResult(explanation);
         } catch (error) {
-          console.error("AI Error:", error);
+          console.error("Data processing or AI Error:", error);
         } finally {
           setLoading(false);
         }
       } else {
+        // Redirect if no data is found
         router.push('/dashboard');
       }
     }
     loadData();
   }, [id, router]);
 
-  if (loading) {
+  // Prevent crash if data is not yet loaded or missing
+  if (loading || !data) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -110,7 +112,7 @@ function ResultsContent() {
                   stroke="currentColor" 
                   strokeWidth="4"
                   strokeDasharray={377}
-                  strokeDashoffset={377 - (377 * data.confidence)}
+                  strokeDashoffset={377 - (377 * (data.confidence || 0))}
                   className="text-primary"
                 />
               </svg>
@@ -153,7 +155,7 @@ function ResultsContent() {
                 <AlertTriangle className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-xs text-muted-foreground">Lifestyle</p>
-                  <p className="text-sm font-bold">Smoking: {data.smoking.toUpperCase()}</p>
+                  <p className="text-sm font-bold">Smoking: {data.smoking?.toUpperCase()}</p>
                 </div>
               </div>
             </div>
@@ -216,7 +218,7 @@ function ResultsContent() {
               {[
                 { factor: 'Breast Lump Presence', importance: data.breastLump === 'yes' ? 0.9 : 0.1 },
                 { factor: 'Family History', importance: data.familyHistory === 'yes' ? 0.8 : 0.2 },
-                { factor: 'Age Factor', importance: parseInt(data.age) > 50 ? 0.7 : 0.3 },
+                { factor: 'Age Factor', importance: (parseInt(data.age) || 0) > 50 ? 0.7 : 0.3 },
                 { factor: 'Symptom Multiplier', importance: data.bloating === 'yes' ? 0.5 : 0.2 },
               ].sort((a, b) => b.importance - a.importance).map((item, i) => (
                 <div key={i} className="space-y-2">
