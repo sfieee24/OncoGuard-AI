@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-medical",
+      "description": "Healthcare professionals collaborating",
+      "imageUrl": "https://picsum.photos/seed/med1/1200/600",
+      "imageHint": "medical healthcare"
+    },
+    {
+      "id": "self-exam",
+      "description": "Illustration of a health check",
+      "imageUrl": "https://picsum.photos/seed/checkup/600/400",
+      "imageHint": "doctor consultation"
+    },
+    {
+      "id": "awareness-ribbon",
+      "description": "Cancer awareness symbol",
+      "imageUrl": "https://picsum.photos/seed/ribbon/400/400",
+      "imageHint": "health awareness"
+    }
+  ]
+}
