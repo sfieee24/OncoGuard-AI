@@ -17,10 +17,8 @@ Early detection significantly increases survival rates and reduces treatment cos
 ## ✨ Features
 
 * 🧠 AI-based cancer prediction
-* 🖼️ Medical image (mammogram) analysis
 * 📊 Risk classification (Benign / Malignant)
 * ⚡ Fast and automated diagnosis support
-* 📈 Data visualization dashboard
 * 🔒 Secure handling of patient data
 * 🌐 Scalable architecture for hospital integration
 
@@ -50,7 +48,6 @@ Early detection significantly increases survival rates and reduces treatment cos
 
 * Jupyter Notebook
 * Git & GitHub
-* Docker (optional)
 
 ---
 
@@ -77,13 +74,10 @@ User Input (Medical Data / Images)
 The model is trained on publicly available datasets such as:
 
 * Breast Cancer Wisconsin Dataset
-* Mammogram Image Datasets (e.g., MIAS / CBIS-DDSM)
 
 **Data includes:**
 
-* Tumor size, texture, radius
 * Patient clinical history
-* Medical imaging (X-rays / mammograms)
 
 ---
 
@@ -124,9 +118,9 @@ http://localhost:5000
 
 ### Steps:
 
-1. Upload patient data or mammogram image
-2. Click **Predict**
-3. View classification results (Benign / Malignant)
+1. Upload patient data 
+2. Click **Take Assessment**
+3. View classification results
 
 ---
 
