@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Bot, User, ShieldAlert, Loader2, Sparkles } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Send, Bot, ShieldAlert, Loader2, Sparkles } from 'lucide-react';
 import { aiHealthChatbot } from '@/ai/flows/ai-health-chatbot-flow';
 
 interface Message {
@@ -16,12 +16,17 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const [mounted, setMounted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bot', content: 'Hello! I am your OncoGuard AI assistant. I can answer questions about breast/ovarian cancer symptoms, prevention, and general lifestyle advice. How can I help you today?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -47,6 +52,10 @@ export default function Chatbot() {
       setLoading(false);
     }
   };
+
+  if (!mounted) {
+    return null; // Prevent hydration mismatch from browser extensions
+  }
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8 md:py-12 flex flex-col h-[calc(100vh-140px)]">
@@ -121,6 +130,7 @@ export default function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 bg-white h-12 text-base rounded-xl"
               disabled={loading}
+              suppressHydrationWarning
             />
             <Button type="submit" size="icon" className="h-12 w-12 rounded-xl bg-primary" disabled={loading || !input.trim()}>
               <Send className="h-5 w-5" />

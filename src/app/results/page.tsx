@@ -1,10 +1,10 @@
+
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { explainRisk, type AiRiskExplanationOutput } from '@/ai/flows/ai-risk-explanation-flow';
 import { Loader2, AlertTriangle, ShieldCheck, ArrowLeft, RefreshCw, Printer, Download, UserCircle, Activity } from 'lucide-react';
@@ -34,9 +34,9 @@ function ResultsContent() {
           ].join(', ');
 
           const explanation = await explainRisk({
-            riskLevel: parsed.risk as 'Low' | 'Medium' | 'High',
-            confidence: parsed.confidence,
-            gender: parsed.gender,
+            riskLevel: (parsed.risk || 'Low') as 'Low' | 'Medium' | 'High',
+            confidence: parsed.confidence || 0,
+            gender: parsed.gender || 'unknown',
             age: parseInt(parsed.age) || 0,
             symptoms: symptoms,
             familyHistory: parsed.familyHistory === 'yes' ? 'History reported' : 'No history',
@@ -66,8 +66,8 @@ function ResultsContent() {
     );
   }
 
-  const riskColor = data.risk === 'High' ? 'bg-red-500' : data.risk === 'Medium' ? 'bg-yellow-500' : 'bg-green-500';
-  const riskTextColor = data.risk === 'High' ? 'text-red-600' : data.risk === 'Medium' ? 'text-yellow-600' : 'text-green-600';
+  const riskColor = data?.risk === 'High' ? 'bg-red-500' : data?.risk === 'Medium' ? 'bg-yellow-500' : 'bg-green-500';
+  const riskTextColor = data?.risk === 'High' ? 'text-red-600' : data?.risk === 'Medium' ? 'text-yellow-600' : 'text-green-600';
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-12">
@@ -93,12 +93,12 @@ function ResultsContent() {
           <CardHeader className="text-center pb-0">
             <CardTitle className="text-muted-foreground font-medium text-sm uppercase tracking-wider">Risk Level</CardTitle>
             <div className={`text-3xl font-black ${riskTextColor} mt-2`}>
-              {data.risk}
+              {data?.risk}
             </div>
           </CardHeader>
           <CardContent className="pt-6 text-center">
             <div className="h-32 w-32 mx-auto rounded-full border-4 border-muted flex flex-col items-center justify-center relative mb-4">
-              <span className="text-2xl font-bold">{(data.confidence * 100).toFixed(0)}%</span>
+              <span className="text-2xl font-bold">{((data?.confidence || 0) * 100).toFixed(0)}%</span>
               <span className="text-[10px] text-muted-foreground font-medium">CONFIDENCE</span>
               <svg className="absolute inset-0 w-full h-full -rotate-90">
                 <circle 
@@ -107,7 +107,7 @@ function ResultsContent() {
                   stroke="currentColor" 
                   strokeWidth="4"
                   strokeDasharray={377}
-                  strokeDashoffset={377 - (377 * (data.confidence || 0))}
+                  strokeDashoffset={377 - (377 * (data?.confidence || 0))}
                   className="text-primary"
                 />
               </svg>
@@ -128,28 +128,28 @@ function ResultsContent() {
                 <UserCircle className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-xs text-muted-foreground">Demographics</p>
-                  <p className="text-sm font-bold">{data.age} Years, {data.gender}</p>
+                  <p className="text-sm font-bold">{data?.age} Years, {data?.gender}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
                 <Activity className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-xs text-muted-foreground">Lump Found</p>
-                  <p className="text-sm font-bold uppercase">{data.breastLump}</p>
+                  <p className="text-sm font-bold uppercase">{data?.breastLump}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-xs text-muted-foreground">Family Hist.</p>
-                  <p className="text-sm font-bold uppercase">{data.familyHistory}</p>
+                  <p className="text-sm font-bold uppercase">{data?.familyHistory}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
                 <AlertTriangle className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-xs text-muted-foreground">Lifestyle</p>
-                  <p className="text-sm font-bold">Smoking: {data.smoking?.toUpperCase()}</p>
+                  <p className="text-sm font-bold">Smoking: {data?.smoking?.toUpperCase()}</p>
                 </div>
               </div>
             </div>
@@ -210,10 +210,10 @@ function ResultsContent() {
             </CardHeader>
             <CardContent className="space-y-6">
               {[
-                { factor: 'Breast Lump Presence', importance: data.breastLump === 'yes' ? 0.9 : 0.1 },
-                { factor: 'Family History', importance: data.familyHistory === 'yes' ? 0.8 : 0.2 },
-                { factor: 'Age Factor', importance: (parseInt(data.age) || 0) > 50 ? 0.7 : 0.3 },
-                { factor: 'Symptom Multiplier', importance: data.bloating === 'yes' ? 0.5 : 0.2 },
+                { factor: 'Breast Lump Presence', importance: data?.breastLump === 'yes' ? 0.9 : 0.1 },
+                { factor: 'Family History', importance: data?.familyHistory === 'yes' ? 0.8 : 0.2 },
+                { factor: 'Age Factor', importance: (parseInt(data?.age) || 0) > 50 ? 0.7 : 0.3 },
+                { factor: 'Symptom Multiplier', importance: data?.bloating === 'yes' ? 0.5 : 0.2 },
               ].sort((a, b) => b.importance - a.importance).map((item, i) => (
                 <div key={i} className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -240,7 +240,7 @@ function ResultsContent() {
 
 export default function Results() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><Loader2 className="h-10 w-10 animate-spin" /></div>}>
       <ResultsContent />
     </Suspense>
   );

@@ -1,10 +1,7 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for an AI chatbot that provides general, non-diagnostic health advice.
- *
- * - aiHealthChatbot - A function that handles user health queries.
- * - AiHealthChatbotInput - The input type for the aiHealthChatbot function.
- * - AiHealthChatbotOutput - The return type for the aiHealthChatbot function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -38,10 +35,6 @@ User's Question: {{{query}}}`,
       {
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
         threshold: 'BLOCK_ONLY_HIGH',
-      },
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
       }
     ],
   }
